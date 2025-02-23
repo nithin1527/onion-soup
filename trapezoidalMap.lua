@@ -4,23 +4,16 @@ about = "Given a set of Line Segments, returns a Trapezoidal Map"
 
 function incorrect(title, model) model:warning(title) end
 
-function get_polygon_segments(obj, model)
-
-	local shape = obj:shape()
-
-	local segment_matrix = shape[1]
-
-	local segments = {}
-	for _, segment in ipairs(segment_matrix) do
-		table.insert(segments, ipe.Segment(segment[1], segment[2]))
-	end
-	 
-	table.insert(
-		segments,
-		ipe.Segment(segment_matrix[#segment_matrix][2], segment_matrix[1][1])
-	)
-
-	return segments
+function display(title, message, model) 
+    local s = title
+    local d = ipeui.Dialog(model.ui:win(), "Output")
+    d:add("label1", "label", {label=s}, 1, 1, 1, 2)
+    d:add("input", "input", {}, 2, 1, 1, 2)
+    d:addButton("ok", "&Ok", "accept")
+    d:setStretch("column", 2, 1)
+    d:setStretch("column", 1, 1)
+    d:set("input", message)
+    d:execute()
 end
 
 function dump(o)
@@ -38,29 +31,27 @@ function dump(o)
  end
 
 
-function get_polygon_segments(obj, model)
+ function get_polygon_segments(obj, model)
 
 	local shape = obj:shape()
+	local transform = obj:matrix()
 
 	local segment_matrix = shape[1]
 
 	local segments = {}
 	for _, segment in ipairs(segment_matrix) do
-		table.insert(segments, ipe.Segment(segment[1], segment[2]))
+		table.insert(segments, ipe.Segment(transform * segment[1], transform * segment[2]))
 	end
 	 
 	table.insert(
 		segments,
-		ipe.Segment(segment_matrix[#segment_matrix][2], segment_matrix[1][1])
+		ipe.Segment(transform * segment_matrix[#segment_matrix][2], transform * segment_matrix[1][1])
 	)
 
 	return segments
 end
 
 function get_pt_and_polygon_selection(model)
-
-    
-
 	local p = model:page()
 
     if not p:hasSelection() then
@@ -82,37 +73,63 @@ function get_pt_and_polygon_selection(model)
 	end
 
     local segments_table = {}
+    local bounding_box = {}
 
     for i = 1, #path_objects do
         local segments = get_polygon_segments(path_objects[i], model)
-        table.insert(segments_table, segments)
+        if #segments == 4 then
+            table.insert(bounding_box, segments)
+        else
+            table.insert(segments_table, segments)
+        end
     end
 
     -- Store the points of selected Line Segments and Calculate
     -- the max and min (extremities) of all coordinates
 
-    output_table = {}
+    output_table = {{}, {}, {}}
 
     x_min = math.huge
     y_min = math.huge
     x_max = -1 * math.huge
     y_max = -1 * math.huge
 
-
-    for i = 1, #segments_table do
-        startPoint, endPoint = segments_table[i][1]:endpoints()
-
-        x_min = math.min(endPoint.x, startPoint.x, x_min)
-        y_min = math.min(endPoint.y, startPoint.y, y_min)
-        x_max = math.max(endPoint.x, startPoint.x, x_max)
-        y_max = math.max(endPoint.y, startPoint.y, y_max)
-
-        table.insert(output_table, {{startPoint.x, endPoint.x}, {startPoint.y, endPoint.y}})
+    if #bounding_box ~= 0 then
+        x_min = bounding_box[1][1]:endpoints().x 
+        y_min = bounding_box[1][2]:endpoints().y 
+        x_max = bounding_box[1][3]:endpoints().x 
+        y_max = bounding_box[1][1]:endpoints().y 
     end
 
-    table.insert(output_table, {{x_min, x_max}, {y_min, y_max}})
-    
-    
+
+    for i = 1, #segments_table do
+        local startPoint, endPoint = segments_table[i][1]:endpoints()
+        if #bounding_box == 0 then
+            x_min = math.min(endPoint.x, startPoint.x, x_min)
+            y_min = math.min(endPoint.y, startPoint.y, y_min)
+            x_max = math.max(endPoint.x, startPoint.x, x_max)
+            y_max = math.max(endPoint.y, startPoint.y, y_max)
+        end
+
+
+        if (startPoint.x > endPoint.x) then
+            table.insert(output_table[1], {{endPoint.x, startPoint.x}, {endPoint.y, startPoint.y}})
+        else
+            table.insert(output_table[1], {{startPoint.x, endPoint.x}, {startPoint.y, endPoint.y}})
+        end
+
+    end
+
+    local scale = 20
+
+    if #bounding_box == 0 then -- bounding box not given
+        table.insert(output_table[2], {{x_min - scale, x_max + scale}, {y_min - scale, y_max + scale}})
+        table.insert(output_table[3], false)
+    else -- bounding box given
+        table.insert(output_table[2], {{x_min, x_max}, {y_min, y_max}})
+        table.insert(output_table[3], true)
+    end
+        
 	return output_table
 end
 
@@ -120,8 +137,8 @@ function create_boundary(x_min, x_max, y_min, y_max, scale, model)
 
     -- Draws a Boundary around the highlighted line sections
 
-    local start = ipe.Vector(x_min - scale, y_min - scale)
-    local finish = ipe.Vector(x_max + scale, y_min - scale)
+    local start = ipe.Vector(x_min - scale , y_min - scale) 
+    local finish = ipe.Vector(x_max + scale, y_min - scale) 
 
     local segment = {type="segment", start, finish}
     local shape = { type="curve", closed=false, segment}
@@ -129,7 +146,7 @@ function create_boundary(x_min, x_max, y_min, y_max, scale, model)
 
     model:creation("create basic path", pathObj) 
 
-    local start = ipe.Vector(x_min - scale, y_min - scale)
+    local start = ipe.Vector(x_min - scale, y_min - scale) 
     local finish = ipe.Vector(x_min - scale, y_max + scale)
 
     local segment = {type="segment", start, finish}
@@ -138,8 +155,8 @@ function create_boundary(x_min, x_max, y_min, y_max, scale, model)
 
     model:creation("create basic path", pathObj) 
 
-    local start = ipe.Vector(x_min -  scale, y_max + scale)
-    local finish = ipe.Vector(x_max + scale, y_max + scale)
+    local start = ipe.Vector(x_min -  scale, y_max + scale) 
+    local finish = ipe.Vector(x_max + scale, y_max + scale) 
 
     local segment = {type="segment", start, finish}
     local shape = { type="curve", closed=false, segment}
@@ -147,7 +164,7 @@ function create_boundary(x_min, x_max, y_min, y_max, scale, model)
 
     model:creation("create basic path", pathObj) 
 
-    local start = ipe.Vector(x_max + scale, y_min - scale)
+    local start = ipe.Vector(x_max + scale, y_min - scale) 
     local finish = ipe.Vector(x_max + scale, y_max + scale)
 
     local segment = {type="segment", start, finish}
@@ -177,22 +194,22 @@ end
 
 
 function run(model)
-    segments_table = get_pt_and_polygon_selection(model)
+    local everything = get_pt_and_polygon_selection(model) 
 
-    inpt = get_pt_and_polygon_selection(model) 
+    local inpt = everything[1]
+    local bbox = everything[2][1]
+    local given = everything[3][1]
 
 
-    x_min = math.max(0, inpt[#inpt][1][1])
-    x_max = inpt[#inpt][1][2]
-    y_min = math.max(0, inpt[#inpt][2][1])
-    y_max = inpt[#inpt][2][2]
+    local x_min = math.max(0, bbox[1][1])
+    local x_max = bbox[1][2]
+    local y_min = math.max(0, bbox[2][1])
+    local y_max = bbox[2][2]
 
-    local scale = 20
-
-    create_boundary(x_min, x_max, y_min, y_max, scale, model)
+    if given == false then create_boundary(x_min, x_max, y_min, y_max, 0, model) end
 
     local outp = {}
-    for i = 1, #inpt - 1 do
+    for i = 1, #inpt do
          
 
         local a1, a2 = inpt[i][1][1], inpt[i][1][2]
@@ -200,10 +217,10 @@ function run(model)
 
         local arr_outp = {{a1, b1}, {a2, b2}}
 
-        table.insert(arr_outp, {a1, y_min - scale})
-        table.insert(arr_outp, {a1, y_max + scale})
-        table.insert(arr_outp, {a2, y_min - scale})
-        table.insert(arr_outp, {a2, y_max + scale})
+        table.insert(arr_outp, {a1, y_min})
+        table.insert(arr_outp, {a1, y_max})
+        table.insert(arr_outp, {a2, y_min})
+        table.insert(arr_outp, {a2, y_max})
 
         table.insert(outp, arr_outp)
     end
@@ -213,14 +230,14 @@ function run(model)
         local segments = outp[segment_index]
         local left, right = segments[1], segments[2]
         for i = 3, #segments do
-            for j = 1, #inpt - 1 do
+            for j = 1, #inpt do
 
                 local a1, b1, a2, b2
 
                 if (i == 3 or i == 4) then
                     a1, b1, a2, b2 = left[1], left[2], left[1], segments[i][2]
                 else
-                    a1, b1, a2, b2 = right[1], right[2], right[1], segments[i][2]
+                    a1, b1, a2, b2 = right[1], right[2], right[1], segments[i][2]   
                 end
 
                 local x1, x2 = inpt[j][1][1], inpt[j][1][2]
@@ -269,14 +286,6 @@ function run(model)
         end
     end
 
-    local s = "Array of Segments in the form [Left Endpoint, Right Endpoint, Lower Left Point, Upper Left Point, Lower Right Point, Upper Right Point]"
-    local d = ipeui.Dialog(model.ui:win(), "Output")
-    d:add("label1", "label", {label=s}, 1, 1, 1, 2)
-    d:add("input", "input", {}, 2, 1, 1, 2)
-    d:addButton("ok", "&Ok", "accept")
-    d:setStretch("column", 2, 1)
-    d:setStretch("column", 1, 1)
-    d:set("input", tableToString(outp, ""))
-    d:execute()
 
+    display("Array of Segments in the form [Left Endpoint, Right Endpoint, Lower Left Point, Upper Left Point, Lower Right Point, Upper Right Point]",tableToString(outp, ""), model)
 end
