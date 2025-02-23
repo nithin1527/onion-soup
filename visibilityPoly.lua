@@ -37,13 +37,14 @@ end
 local function get_polygon_segments(obj, model)
     local shape = obj:shape()
     local segment_matrix = shape[1]
+    local transform = obj:matrix()
 
     local segments = {}
     for _, segment in ipairs(segment_matrix) do
-        table.insert(segments, ipe.Segment(segment[1], segment[2]))
+        table.insert(segments, ipe.Segment(transform * segment[1], transform * segment[2]))
     end
 
-    table.insert(segments, ipe.Segment(segment_matrix[#segment_matrix][2], segment_matrix[1][1]))
+    table.insert(segments, ipe.Segment(transform * segment_matrix[#segment_matrix][2], transform * segment_matrix[1][1]))
 
     return segments
 end
@@ -57,12 +58,13 @@ local function collect_pt_polygons_vertices(model)
 
     for _, obj, sel, _ in p:objects() do
         if sel then
+            local transform = obj:matrix()
             if obj:type() == "path" then
                 table.insert(polygons, obj)
                 table.insert(vertices, get_polygon_vertices(obj, model))
             end
             if obj:type() == "reference" then
-                point = obj:position()
+                point = transform * obj:position()
             end
         end
     end
