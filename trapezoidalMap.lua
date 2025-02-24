@@ -1,6 +1,6 @@
 -- Define the Ipelet
 label = "Trapezoidal Map"
-about = "Given a set of Line Segments, returns a Trapezoidal Map"
+about = "Given a set of Line Segments and an optional Bounding Box, returns a Trapezoidal Map"
 
 function incorrect(title, model) model:warning(title) end
 
@@ -51,6 +51,18 @@ function dump(o)
 	return segments
 end
 
+function in_box(bbox, startPoint, endPoint)
+    local x_min, x_max, y_min, y_max = bbox[1], bbox[2], bbox[3], bbox[4]
+    if ((x_min <= endPoint.x and endPoint.x <= x_max) and
+        (x_min <= startPoint.x and startPoint.x <= x_max) and
+        (y_min <= endPoint.y and endPoint.y <= y_max) and
+        (y_min <= startPoint.y and startPoint.y <= y_max)) then
+            return true
+        else
+            return false
+        end
+end
+
 function get_pt_and_polygon_selection(model)
 	local p = model:page()
 
@@ -87,12 +99,10 @@ function get_pt_and_polygon_selection(model)
     -- Store the points of selected Line Segments and Calculate
     -- the max and min (extremities) of all coordinates
 
-    output_table = {{}, {}, {}}
+    local output_table = {{}, {}, {}}
 
-    x_min = math.huge
-    y_min = math.huge
-    x_max = -1 * math.huge
-    y_max = -1 * math.huge
+    local x_min, y_min, x_max, y_max = math.huge, math.huge, -1 * math.huge, -1 * math.huge
+
 
     if #bounding_box ~= 0 then
         x_min = bounding_box[1][1]:endpoints().x 
@@ -112,12 +122,26 @@ function get_pt_and_polygon_selection(model)
         end
 
 
-        if (startPoint.x > endPoint.x) then
-            table.insert(output_table[1], {{endPoint.x, startPoint.x}, {endPoint.y, startPoint.y}})
+        if (startPoint.x > endPoint.x) then -- Ensures Line Segments are organized left to right
+            if (#bounding_box == 0 or in_box({x_min, x_max, y_min, y_max}, startPoint, endPoint)) then
+                table.insert(output_table[1], {{endPoint.x, startPoint.x}, {endPoint.y, startPoint.y}})
+            else
+                display("The Following Segment was Ignored - Please Ensure it is fully contained in the bounding box", 
+                        tableToString({{endPoint.x, startPoint.x}, {endPoint.y, startPoint.y}}), model)
+            end
         else
-            table.insert(output_table[1], {{startPoint.x, endPoint.x}, {startPoint.y, endPoint.y}})
+            if (#bounding_box == 0 or in_box({x_min, x_max, y_min, y_max}, startPoint, endPoint)) then
+                table.insert(output_table[1], {{startPoint.x, endPoint.x}, {startPoint.y, endPoint.y}})
+            else
+                display("The Following Segment was Ignored - Please Ensure it is fully contained in the bounding box", 
+                        tableToString({{startPoint.x, endPoint.x}, {startPoint.y, endPoint.y}}), model)
+            end
         end
 
+    end
+
+    if  #output_table[1] ~= #segments_table then
+        incorrect(dump("Some Points were Ignored - Please draw the Bounding Box after modifying (Translating, Shearing...) segments"), model)
     end
 
     local scale = 20
