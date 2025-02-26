@@ -197,6 +197,7 @@ function triangulate(vertices, model)
     ll_add(vertlist, i)
   end
 
+  --local index_counter = 1
   local node = vertlist.head
   while ll_size(vertlist) > 2 do
     local i = node.value
@@ -206,7 +207,7 @@ function triangulate(vertices, model)
     local vert_prev = vertices[i]
     local vert_current = vertices[j]
     local vert_next = vertices[k]
-
+    
     local is_convex = isConvex(vert_prev, vert_current, vert_next)
     local is_ear = true
     if is_convex then
@@ -220,6 +221,15 @@ function triangulate(vertices, model)
       is_ear = false
     end
 
+    -- temp
+    --[[
+    if is_ear then
+      indices[index_counter] = {vert_prev, vert_current, vert_next}
+      index_counter = index_counter + 1
+      ll_remove(vertlist, ll_next_loop(vertlist, node).value)
+    end
+    --]]
+    
     if is_ear then
     --   local triangle = { vert_prev, vert_current, vert_next }
       local triangle_objs = { ipe.Vector(vert_prev.x, vert_prev.y), ipe.Vector(vert_current.x, vert_current.y), ipe.Vector(vert_next.x, vert_next.y)}
@@ -234,21 +244,37 @@ function triangulate(vertices, model)
   return indices
 end
 
-function sort_vertices_ccw(vertices)
-    local cx, cy = 0, 0
-    for _, v in ipairs(vertices) do
-      cx = cx + v.x
-      cy = cy + v.y
+--[=[
+    Given: 
+        
+{vertices}
+  Return:
+{vertices ordered in clockwise fashion}
+]=]
+function reorient_ccw(vertices)
+    if orient(vertices[1], vertices[2], vertices[3]) < 0 then
+        return reverse_list(vertices)
     end
-    cx = cx / #vertices
-    cy = cy / #vertices
-  
-    table.sort(vertices, function(a, b)
-      local angleA = math.atan2(a.y - cy, a.x - cx)
-      local angleB = math.atan2(b.y - cy, b.x - cx)
-      return angleA < angleB
-    end)
     return vertices
+end
+
+function orient(p, q, r)
+    local val = p.x * (q.y - r.y) + q.x * (r.y - p.y) + r.x * (p.y - q.y)
+    return val
+end
+
+function reverse_list(lst)
+    local i = 1
+    local j = #lst
+    while i < j do
+        local temp = lst[i]
+        lst[i] = lst[j]
+        lst[j] = temp
+        i = i + 1
+        j = j -1
+    end
+
+    return lst
 end
 
 function run(model)
@@ -256,6 +282,6 @@ function run(model)
   local vertices = get_pt_and_polygon_selection(model)
   
   if vertices then
-    triangulate(sort_vertices_ccw(vertices), model)
+    triangulate(reorient_ccw(vertices), model)
   end
 end
