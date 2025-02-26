@@ -254,6 +254,7 @@ end
 function run(model)
   math.randomseed()
   local vertices = get_pt_and_polygon_selection(model)
+  
   if vertices then
     triangulate(sort_vertices_ccw(vertices), model)
   end
