@@ -95,6 +95,8 @@ function run(model)
     local v = get_selected_poly_vertices(model)
     local vu = unique_points(v, model)
 
+    local depth = tonumber(model:getString("Enter Depth"))
+
     if vu == nil then 
         incorrect("waiter! waiter! more vertices, please!", model)
         return
@@ -105,5 +107,5 @@ function run(model)
         return
     end
 
-    sierpinski_triangle(vu, 8, model)
+    sierpinski_triangle(vu, depth, model)
 end

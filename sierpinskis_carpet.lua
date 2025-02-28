@@ -138,7 +138,10 @@ end
 
 -- ---------------------------------------------------------------------------
 
+
+
 function run(model)
+    local depth = tonumber(model:getString("Enter Depth"))
     local v = get_selected_poly_vertices(model)
     local vu = unique_points(v, model)
 
@@ -152,5 +155,5 @@ function run(model)
         return
     end
 
-    sierpinski_carpet(vu, 5, model)
+    sierpinski_carpet(vu, depth, model)
 end
