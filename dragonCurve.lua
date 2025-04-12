@@ -1,4 +1,5 @@
-label = "Dragon Curve" -- replace with the title of your ipelet
+label = "Points and Polygons"
+methods = {{ label = "Dragon Curve", run = runDragonCurve }}
 about = "Creates Dragon Curve from right-angled L shape (with equal sides). Make sure the L is right-angled and has equal sides." -- replace with an appropriate description of your ipelet 
 
 -- ---------------------------------------------------------------------------
@@ -148,7 +149,7 @@ end
 
 -- ---------------------------------------------------------------------------
 
-function run(model)
+function runDragonCurve(model)
     local v = get_selected_poly_vertices(model)
     local vu = unique_points(v, model)
 

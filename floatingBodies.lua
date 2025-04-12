@@ -1,4 +1,5 @@
-label = "New Convex"
+label = "Points and Polygons"
+methods = {{ label = "Floating Body", run = runFloatingBody }}
 
 -- Returns a table of the vertecies in all selected polygons
 -- In the event that multiple polygons are selected, only one is chosen
@@ -415,7 +416,7 @@ function print_vector(vector, name, model)
 end
 
 
-function run(model)
+function runFloatingBodies(model)
 
     -- Stores the unmodified coordinates in ncoordinates
     local ncoordinates = get_pts_and_segment_selection(model)

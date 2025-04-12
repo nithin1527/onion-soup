@@ -1,4 +1,5 @@
-label = "Sierpinski's Triangle"
+label = "Points and Polygons"
+methods = {{ label = "Sierpinski's Triangle", run = runSierpinskiTriangle }}
 about = "Creates Sierpinski's Triangle out of a provided triangle (8 iterations)"
 
 -- ---------------------------------------------------------------------------
@@ -91,7 +92,7 @@ end
 
 -- ---------------------------------------------------------------------------
 
-function run(model)
+function runSierpinskiTriangle(model)
     local v = get_selected_poly_vertices(model)
     local vu = unique_points(v, model)
 

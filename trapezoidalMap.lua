@@ -1,5 +1,5 @@
--- Define the Ipelet
-label = "Trapezoidal Map"
+label = "Points and Polygons"
+methods = {{ label = "Trapezoidal Map", run = runTrapezoidalMap }}
 about = "Given a set of Line Segments and an optional Bounding Box, returns a Trapezoidal Map"
 
 function incorrect(title, model) model:warning(title) end
@@ -217,7 +217,7 @@ function tableToString(tbl, indent)
 end
 
 
-function run(model)
+function runTrapezoidalMap(model)
     local everything = get_pt_and_polygon_selection(model) 
 
     local inpt = everything[1]

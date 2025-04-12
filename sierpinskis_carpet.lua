@@ -1,5 +1,6 @@
-label = "Sierpinski's Carpet" -- replace with the title of your ipelet
-about = "Creates Sierpinski's carpet out of a provided square" -- replace with an appropriate description of your ipelet 
+label = "Points and Polygons"
+methods = {{ label = "Sierpinski's Carpet", run = runSierpinskiCarpet }}
+about = "Creates Sierpinski's carpet out of a provided square" 
 
 -- ---------------------------------------------------------------------------
 -- All Helper functions go here!
@@ -140,7 +141,7 @@ end
 
 
 
-function run(model)
+function runSierpinskiCarpet(model)
     local depth = tonumber(model:getString("Enter Depth"))
     local v = get_selected_poly_vertices(model)
     local vu = unique_points(v, model)

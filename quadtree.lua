@@ -1,11 +1,11 @@
 -- ipelet information
-label = "Quadtree"
-about = "Given a set of points, draws a respective point-region quadtree or point quadtree. \
-        To copy the string representation of the quadtree, right click on the text box right above the structure and select Edit Text."
+label = "Points and Polygons"
+methods = {
+    { label = "Point-region Quadtree", run = create_point_region_quadtree },
+    { label = "Point Quadtree", run = create_point_quadtree }
+}
 
-
-
-
+about = "Given a set of points, draws a respective point-region quadtree or point quadtree"
 
 -- point-region quadtree class
 local PointRegionQuadtreeNode = {}
@@ -18,7 +18,7 @@ function PointRegionQuadtreeNode.new(boundary, capacity)
         divided = false,
     }
 
-    -- instance methodsx
+    -- instance methods
     instance.subdivide = PointRegionQuadtreeNode.subdivide
     instance.insert = PointRegionQuadtreeNode.insert
     instance.belongs = PointRegionQuadtreeNode.belongs
@@ -311,23 +311,22 @@ local function get_unique_selected_points(model)
         if sel then
             if obj:type() == "reference" then
                 local point = obj:position()
-                local transform = obj:matrix()
 
                 for _, existing_point in ipairs(points) do
 
                     while existing_point.x == point.x do
                         if math.random() >= 0.5 then
-                            point = ipe.Vector(point.x + 0.001, point.y)
+                            point = ipe.Vector(point.x + 0.1, point.y)
                         else
-                            point = ipe.Vector(point.x - 0.001, point.y)
+                            point = ipe.Vector(point.x - 0.1, point.y)
                         end
                     end
 
                     while existing_point.y == point.y do
                         if math.random() >= 0.5 then
-                            point = ipe.Vector(point.x, point.y + 0.001)
+                            point = ipe.Vector(point.x, point.y + 0.1)
                         else
-                            point = ipe.Vector(point.x, point.y - 0.001)
+                            point = ipe.Vector(point.x, point.y - 0.1)
                         end
                     end
                 end
@@ -336,7 +335,7 @@ local function get_unique_selected_points(model)
                 local new_matrix = obj:matrix() * ipe.Matrix(1, 0, 0, 1, dx, dy)
                 obj:setMatrix(new_matrix)
 
-                table.insert(points, transform * point)
+                table.insert(points, point)
             end
         end
     end
@@ -415,16 +414,22 @@ local function create_point_region_quadtree(model)
     d:add("label1", "label", {label=s}, 1, 1, 1, 2)
     d:add("label2", "label", {label="Input:"}, 2, 1)
     d:add("input", "input", {}, 2, 2)
+
+    d:add("checkbox_label", "label", {label="Check to print array format:"}, 3, 1)
+    d:add("checkbox", "checkbox", {label=""}, 3, 2)
+
     d:addButton("ok", "&Ok", "accept")
     d:addButton("cancel", "&Cancel", "reject")
     d:setStretch("column", 2, 1)
 
     local num = -1
+    local checkbox_checked
   
     while true do
       if not d:execute() then return end
       num = tonumber(d:get("input"))
       if num and num >= 1 and math.floor(num) == num then
+        checkbox_checked = d:get("checkbox")
         break
       else
         ipeui.messageBox(model.ui:win(), "warning", "Invalid Input", "Please enter an integer greater than or equal to 1!")
@@ -447,15 +452,50 @@ local function create_point_region_quadtree(model)
         end
 
         quadtree:draw(model)
+
+        if checkbox_checked then
         
-        model:creation("", ipe.Text(model.attributes, "Right Click then Edit Text!", ipe.Vector(boundary.min_x, boundary.max_y + 50), 200))
-        model:creation("", ipe.Text(model.attributes, quadtree:to_string(0), ipe.Vector(boundary.min_x, boundary.max_y + 25), 200))
+            model:creation("", ipe.Text(model.attributes, quadtree:to_string(0), ipe.Vector(boundary.min_x, boundary.max_y + 25), 200))
+
+            local s = "Copy the string representation of your quadtree!"
+            local d = ipeui.Dialog(model.ui:win(), "Output")
+            d:add("label1", "label", {label=s}, 1, 1, 1, 2)
+            d:add("input", "input", {}, 2, 1, 1, 2)
+            d:addButton("ok", "&Ok", "accept")
+            d:setStretch("column", 2, 1)
+            d:setStretch("column", 1, 1)
+            d:set("input", quadtree:to_string(0))
+            d:execute()
+        end
 
     end
 end
 
 
 local function create_point_quadtree(model)
+
+    -- ends if no points have been selected
+    local unique_points = get_unique_selected_points(model)
+
+    if #unique_points < 1 then
+        model:warning("Please select at least one point!")
+        return
+    end
+
+    local d = ipeui.Dialog(model.ui:win(), "Array Format Selection")
+
+    d:add("checkbox_label", "label", {label="Check to print array format:"}, 3, 1)
+    d:add("checkbox", "checkbox", {label=""}, 3, 2)
+
+    d:addButton("ok", "&Ok", "accept")
+    d:addButton("cancel", "&Cancel", "reject")
+    d:setStretch("column", 2, 1)
+
+    local checkbox_checked
+
+    if not d:execute() then return end
+
+    checkbox_checked = d:get("checkbox")
 
     -- gets all selected points and draws bounding box
     local points = create_box_and_get_points(model)
@@ -472,16 +512,19 @@ local function create_point_quadtree(model)
 
     quadtree:draw(model)
 
-    model:creation("", ipe.Text(model.attributes, "Right Click then Edit Text!", ipe.Vector(boundary.min_x, boundary.max_y + 50), 200))
-    model:creation("", ipe.Text(model.attributes, quadtree:to_string(0), ipe.Vector(boundary.min_x, boundary.max_y + 25), 200))
+    if checkbox_checked then
+
+        model:creation("", ipe.Text(model.attributes, quadtree:to_string(0), ipe.Vector(boundary.min_x, boundary.max_y + 25), 200))
+
+        local s = "Copy the string representation of your quadtree!"
+        local d = ipeui.Dialog(model.ui:win(), "Output")
+        d:add("label1", "label", {label=s}, 1, 1, 1, 2)
+        d:add("input", "input", {}, 2, 1, 1, 2)
+        d:addButton("ok", "&Ok", "accept")
+        d:setStretch("column", 2, 1)
+        d:setStretch("column", 1, 1)
+        d:set("input", quadtree:to_string(0))
+        d:execute()
+    end
 
 end
-
-
-
-
--- sub-ipelets for point-region quadtree and point quadtree
-methods = {
-    { label = "Point-region Quadtree", run = create_point_region_quadtree },
-    { label = "Point Quadtree", run = create_point_quadtree }
-}

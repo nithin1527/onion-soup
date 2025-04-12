@@ -1,4 +1,6 @@
-label = "Triangulate"
+label = "Points and Polygons"
+methods = {{ label = "Triangulate", run = runTriangulate }}
+
 revertOriginal = _G.revertOriginal
 about = [[
     This ipelet triangulates a simple polygon.
@@ -277,7 +279,7 @@ function reverse_list(lst)
     return lst
 end
 
-function run(model)
+function runTriangulate(model)
   math.randomseed()
   local vertices = get_pt_and_polygon_selection(model)
   

@@ -1,4 +1,5 @@
-label = "Random Point Triangulation"
+label = "Points and Polygons"
+methods = {{ label = "Random Point Triangulation", run = runRandomPointTriangulation }}
 revertOriginal = _G.revertOriginal
 about = [[
     This ipelet generates random points inside a polygon using the triangulation of a simple polygon.
@@ -331,7 +332,7 @@ function randomPointInTriangle(p1, p2, p3)
   return {x = x, y = y}
 end
 
-function run(model)
+function runRandomPointTriangulation(model)
     -- Set the seed for random generation (optional but useful for reproducibility)
     math.randomseed()
     local amount = model:getString("How many points to place?")
