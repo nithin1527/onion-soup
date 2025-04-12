@@ -13,6 +13,18 @@ This project provides the following Ipelets:
 - Random Point Triangulation
 - Triangulate
 
+## Ipe Installation
+1. Go to [The Ipe extensible drawing editor (otfried.org)](https://ipe.otfried.org/)
+2. Click on  **`Download the current Ipe version`**
+    
+    ![image](https://github.com/user-attachments/assets/a3e8c2e2-af58-46a1-8e15-9a4797647b98)
+
+    
+3. Download the executable corresponding to your system’s operating system
+    
+    ![image](https://github.com/user-attachments/assets/91788102-73e8-4e10-9ff9-42aaaf9789e3)
+
+
 ## ▶️ Usage
 To use the Ipelets:
 - Download the Ipelet of your choice (If you want all of the ipelets under a single menu, ONLY download the pointsAndPolygons.lua file)
