@@ -16,6 +16,8 @@ This project provides the following Ipelets:
 ## ▶️ Usage
 To use the Ipelets:
 - Download the Ipelet of your choice (If you want all of the ipelets under a single menu, ONLY download the pointsAndPolygons.lua file)
+- Locate the Ipelets folder on your machine
+- Place the downloaded Ipelet file(s) in this folder
 - Open **Ipe**.
 - Navigate to the **Ipelets** menu.
 - Select the desired operation.
