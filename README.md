@@ -25,7 +25,7 @@ To install the Ipelets:
    - Copy all extracted `.lua` files from the `/ipelets` folder.
    - Paste them into the `/ipelets` subdirectory of your Ipe installation.
 
-Once added, they will automatically appear in the **Ipelets** menu within Ipe. If you want all of the ipelets under a single menu, ONLY place the pointsAndPolygons.lua file in the ipelets folder
+Once added, they will automatically appear in the **Ipelets** menu within Ipe. If you want all of the ipelets under a single menu, ONLY place the pointsAndPolygons.lua file in the ipelets folder.
 
 ## ▶️ Usage
 To use the Ipelets:
@@ -37,7 +37,6 @@ To use the Ipelets:
 We are actively maintaining this project and are committed to **fixing bugs and assisting users**. If you encounter any issues, feel free to reach out to **octavo@umd.edu**.
 
 While we **may** expand the project by adding more **Ipelets**, this depends on future needs and contributions. Potential updates could include:
-- Additional convex geometry tools.
 - Performance optimizations.
 
 ## 👥 Authors & Contributors
