@@ -1,5 +1,4 @@
-label = "Points and Polygons"
-methods = {{ label = "Floating Body", run = runFloatingBody }}
+label = "Floating Bodies"
 
 -- Returns a table of the vertecies in all selected polygons
 -- In the event that multiple polygons are selected, only one is chosen
@@ -416,7 +415,7 @@ function print_vector(vector, name, model)
 end
 
 
-function runFloatingBodies(model)
+function run(model)
 
     -- Stores the unmodified coordinates in ncoordinates
     local ncoordinates = get_pts_and_segment_selection(model)

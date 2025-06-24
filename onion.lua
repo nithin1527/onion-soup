@@ -1,5 +1,4 @@
-label = "Points and Polygons"
-methods = {{ label = "Onion Peeling", run = runOnionPeeling }}
+label = "Onion Peeling"
 revertOriginal = _G.revertOriginal
 about = [[
     This ipelet creates an onion peeling of the selected points.
@@ -9,7 +8,7 @@ about = [[
 function incorrect(title, model) model:warning(title) end
 
 -- ========================================================================================================================
---! CONVEX HULL (GRAHAM SCAN)
+--! CONVEX HULL (GRAHAM SCAN) -- from the library
 -- https://www.codingdrills.com/tutorial/introduction-to-divide-and-conquer-algorithms/convex-hull-graham-scan
 
 -- Function to calculate the squared distance between two points
@@ -163,7 +162,7 @@ function onion_peeling(points, model)
     onion_peeling(non_hull, model)
 end
 
-function runOnionPeeling(model)
+function run(model)
     local p = model:page()
     if not p:hasSelection() then incorrect("Please select at least 1 points", model) return end
 

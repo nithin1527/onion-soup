@@ -1,12 +1,11 @@
-
--- ========================================================================================================================
 -- This ipelet creates the beta Skeleton of a set of points..
-label = "Points and Polygons"
-methods = {{ label = "Beta Skeleton", run = runBetaSkeleton }}
+label = "Beta Skeleton"
 revertOriginal = _G.revertOriginal
 about = [[
     This ipelet creates the beta Skeleton of a set of points.
 ]]
+
+-- ========================================================================================================================
 
 function incorrect(title, model) model:warning(title) end
 
@@ -80,7 +79,7 @@ function unique_points(points, model)
     return uniquePoints
 end
 
-function runBetaSkeleton(model)
+function run(model)
     -- Ok do we have a selection
     local p = model:page()
     local segments = {}
@@ -154,4 +153,3 @@ function runBetaSkeleton(model)
   end
   model:creation("Beta Skeleton ", ipe.Group(segments)) 
 end
--- ========================================================================================================================
